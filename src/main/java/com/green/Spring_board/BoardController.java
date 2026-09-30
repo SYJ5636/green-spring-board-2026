@@ -1,8 +1,6 @@
 package com.green.Spring_board;
 
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -20,7 +18,13 @@ public class BoardController {
         return boardRepository.findAll();
     }
 
-    // * 삽입
+    // * 상세 조회
+    @GetMapping("/{id}")
+    public Boards getBoardDetail(@PathVariable int id) {
+        return boardRepository.findById(id).get();
+    }
+
+    // * 삽입 (생성)
     @PostMapping
     public void createBoard(@RequestBody BoardCreateRequest boardCreateRequest) {
         System.out.println(boardCreateRequest.getTitle());
@@ -34,7 +38,25 @@ public class BoardController {
     }
 
     // * 수정
-
+    @PatchMapping("/{id}")
+    public void updateBoard(
+            @PathVariable int id,
+            @RequestBody BoardCreateRequest boardCreateRequest
+    ) {
+        Boards board = boardRepository.findById(id).get();  // * DB에서 데이터를 가져온 것을 기준으로
+                                                            // * 아래에서 조건을 보고 동작한다.
+        if (boardCreateRequest.getTitle() != null) {
+            board.setTitle(boardCreateRequest.getTitle());
+        }
+        if (boardCreateRequest.getContent() != null) {
+            board.setContent(boardCreateRequest.getContent());
+        }
+        boardRepository.save(board);
+    }
 
     // * 삭제
+    @DeleteMapping("/{id}")
+    public void deleteBoard(@PathVariable int id) {
+        boardRepository.deleteById(id);
+    }
 }
