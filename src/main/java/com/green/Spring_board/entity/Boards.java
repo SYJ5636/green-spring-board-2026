@@ -1,4 +1,4 @@
-package com.green.Spring_board;
+package com.green.Spring_board.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

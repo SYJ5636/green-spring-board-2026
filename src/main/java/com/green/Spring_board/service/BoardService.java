@@ -1,52 +1,45 @@
-package com.green.Spring_board;
+package com.green.Spring_board.service;
 
+import com.green.Spring_board.dto.BoardCreateRequest;
+import com.green.Spring_board.entity.Boards;
+import com.green.Spring_board.repository.BoardRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
+import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/board")
+@Service
 @AllArgsConstructor
-public class BoardController {
+public class BoardService {
     private BoardRepository boardRepository;
 
     // * 전체 조회
-    @GetMapping
-    public ResponseEntity<List<Boards>> getBoards() {
-        return ResponseEntity.ok(
-                boardRepository.findAll()
-        );
+    public List<Boards> getAllBoards() {
+        return boardRepository.findAll();
     }
 
     // * 상세 조회
-    @GetMapping("/{id}")
-    public ResponseEntity getBoardDetail(@PathVariable int id) {
+    public Boards getBoards(int id) {
         Optional<Boards> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isEmpty()) {
             // 요청한 게시글을 찾지 못한 경우
-            return ResponseEntity.notFound().build();
+            return null;
         }
 
         Boards board = optionalBoard.get();
 
         board.setHits(board.getHits() + 1);
         boardRepository.save(board);
-
-        return ResponseEntity.ok(board);
+        return board;
     }
 
-    // * 삽입 (생성)
-    @PostMapping
-    public ResponseEntity<Boards> createBoard(@RequestBody BoardCreateRequest boardCreateRequest) {
+    // * 삽입
+    public int createBoard(BoardCreateRequest boardCreateRequest) {
         if (boardCreateRequest.getTitle() == null || boardCreateRequest.getTitle().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return -1;
         }
         if (boardCreateRequest.getContent() == null || boardCreateRequest.getContent().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return -1;
         }
 
         Boards board = new Boards();
@@ -54,22 +47,16 @@ public class BoardController {
         board.setContent(boardCreateRequest.getContent());
 
         Boards saveBoard = boardRepository.save(board); // * save도 값을 돌려 받을 수 있다 (저장하고나서 저장된 데이터를 돌려줌)
-        int newBoardId = saveBoard.getId();
-        URI location = URI.create("/api/board/" + newBoardId);
-        return ResponseEntity.created(location).body(board);
+
+        return saveBoard.getId();
     }
 
     // * 수정
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> updateBoard(
-            @PathVariable int id,
-            @RequestBody BoardCreateRequest boardCreateRequest
-    ) {
+    public int updateBoard(int id, BoardCreateRequest boardCreateRequest) {
         Optional<Boards> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            return -1;
         }
-
         Boards board = optionalBoard.get();
 
         if (boardCreateRequest.getTitle() != null && !boardCreateRequest.getTitle().isBlank()) {
@@ -81,17 +68,19 @@ public class BoardController {
 
         boardRepository.save(board);
 
-        return ResponseEntity.ok().build();
+        return 0;
     }
 
+
     // * 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable int id) {
-        Boolean isExist = boardRepository.existsById(id);
+    public int deleteBoard(int id) {
+        boolean isExist = boardRepository.existsById(id);
         if (!isExist) {
-            return ResponseEntity.notFound().build();
+            return -1;
         }
+
         boardRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return 0;
     }
+
 }
