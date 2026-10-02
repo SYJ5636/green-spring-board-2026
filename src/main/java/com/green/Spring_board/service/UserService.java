@@ -114,7 +114,6 @@ public class UserService {
         User user = userOptional.get();
         userRepository.delete(user);
     }
-
 }
 
 
