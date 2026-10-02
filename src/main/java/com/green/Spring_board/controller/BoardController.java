@@ -88,4 +88,6 @@ public class BoardController {
             return  ResponseEntity.internalServerError().build();
         }
     }
+
+    //테스트용
 }
