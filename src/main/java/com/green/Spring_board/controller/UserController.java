@@ -1,9 +1,6 @@
 package com.green.Spring_board.controller;
 
-import com.green.Spring_board.dto.LoginRequest;
-import com.green.Spring_board.dto.MyInfoResponse;
-import com.green.Spring_board.dto.SignupRequest;
-import com.green.Spring_board.dto.UserUpdateRequest;
+import com.green.Spring_board.dto.*;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
 import com.green.Spring_board.repository.UserRepository;
 import com.green.Spring_board.service.UserService;
@@ -11,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,13 +20,13 @@ public class UserController {
     private final UserRepository userRepository;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupRequest signupRequest) {
         userService.signup(signupRequest);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
+    public ResponseEntity<ApiResponse<Void>> login(
             @Valid @RequestBody LoginRequest loginRequest,
             HttpServletRequest httpServletRequest) {
         int userId = userService.login(loginRequest);
@@ -39,11 +37,11 @@ public class UserController {
         httpServletRequest.changeSessionId();
         // 유저 아이디를 장부에 넣어야 함
         session.setAttribute("userId", userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 
     @GetMapping("/me")
-    public ResponseEntity<MyInfoResponse> getCurrentUser(HttpServletRequest httpServletRequest) {
+    public ResponseEntity<ApiResponse<MyInfoResponse>> getCurrentUser(HttpServletRequest httpServletRequest) {
         // 내 정보 조회하기
         // 이메일과 닉네임만 내려주기
         // 1. 이 사람의 세션을 가져옴
@@ -63,12 +61,12 @@ public class UserController {
         int userId = (int) session.getAttribute("userId");
         MyInfoResponse response = userService.getUserInfo(userId);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().body(ApiResponse.ok(response));
     }
 
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
 
         if (session == null || session.getAttribute("userId") == null ) {
@@ -76,13 +74,13 @@ public class UserController {
         }
 
         session.invalidate();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.ok());
         // 사용자가 다시 로그인 할 때까지
         // 사용자의 로그인 세션은 만료 함
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<Void> updateUserInfo(
+    public ResponseEntity<ApiResponse<Void>> updateUserInfo(
             HttpServletRequest request,
             @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
         // 이메일 닉네임 업데이트
@@ -93,13 +91,13 @@ public class UserController {
         }
             int userId = (int) session.getAttribute("userId");
             userService.updateUserInfo(userId, userUpdateRequest);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(ApiResponse.ok());
     }
 
 
     // 유저 탈퇴 기능
     @DeleteMapping
-    public ResponseEntity<Void> deleteUser(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             throw new UnauthenticatedException("로그인이 필요합니다.");
@@ -111,6 +109,6 @@ public class UserController {
         userService.deleteUser(userId);
         // 2. 자동 로그아웃되게 한다. (세션 비활성화)
         session.invalidate();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 }

@@ -1,5 +1,6 @@
 package com.green.Spring_board.global;
 
+import com.green.Spring_board.dto.ApiResponse;
 import com.green.Spring_board.exceptions.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -29,20 +30,22 @@ public class GlobalExceptionHandler {
 
     // 요청한 데이터, 있어야 할 데이터가 없을 때 공통 처리
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Void> handlerNotFound(ResourceNotFoundException e) {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Void>> handlerNotFound(ResourceNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.fail(e.getMessage()));
     }
 
     // 인증 정보가 없거나 적절하지 않을 때 공통 처리
     @ExceptionHandler(UnauthenticatedException.class)
-    public ResponseEntity<Void> handlerUnauthenticated(UnauthenticatedException e){
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<ApiResponse<Void>> handlerUnauthenticated(UnauthenticatedException e){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.fail(e.getMessage()));
     }
 
     // Validator 등 입력 검증 과정에서 문제 발생 시 공통 처리
     // 400 에러와 상세 안내까지 해줌
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handlerValidationError(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<Void>> handlerValidationError(MethodArgumentNotValidException e) {
         String resultMessage = "";
         List<FieldError> errors = e.getBindingResult().getFieldErrors();
         for (FieldError error : errors) {
@@ -50,41 +53,41 @@ public class GlobalExceptionHandler {
                     error.getDefaultMessage() + "\n";
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.parseMediaType("text/plain;charset=UTF-8"))
-                .body(resultMessage);
+                .body(ApiResponse.fail(resultMessage));
     }
 
     // 고유값이 중복되어 저장에 실패하거나,
     // 존재하지 않는 외래키를 이용해 데이터 생성 시도 등 문제 상황 공통 처리
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> handleDateConflict(DataIntegrityViolationException e) {
+    public ResponseEntity<ApiResponse<Void>> handleDateConflict(DataIntegrityViolationException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.parseMediaType("text/plain;charset=UTF-8"))
-                .body("중복되거나 저장할 수 없는 데이터입니다.");
+                .body(ApiResponse.fail("중복되거나 저장할 수 없는 데이터입니다."));
     }
 
     // 세션 로그인 방식 이메일 중복 방지
     @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<String> handleConflict(ResourceConflictException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    public ResponseEntity<ApiResponse<Void>> handleConflict(ResourceConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.fail(e.getMessage()));
     }
 
     // 이 외의 예외들은 모두 여기서 공통 처리(500)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
+    public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.parseMediaType("text/plain;charset=UTF-8"))
-                .body("서버에서 오류가 발생했습니다.");
+                .body(ApiResponse.fail("서버에서 오류가 발생했습니다."));
     }
 
     @ExceptionHandler(AuthorizationFailureException.class)
-    public ResponseEntity<Void> handleForbidden(AuthorizationFailureException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(AuthorizationFailureException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.fail(e.getMessage()));
     }
 
 
     @ExceptionHandler(InvalidStateException.class)
-    public ResponseEntity<Void> handleBadRequest(InvalidStateException e) {
-        return ResponseEntity.badRequest().build();
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(InvalidStateException e) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.fail(e.getMessage()));
     }
 }
