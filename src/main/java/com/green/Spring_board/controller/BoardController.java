@@ -1,10 +1,13 @@
 package com.green.Spring_board.controller;
 
+import com.green.Spring_board.dto.BoardResponse;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UserRequestException;
 import com.green.Spring_board.dto.BoardCreateRequest;
 import com.green.Spring_board.service.BoardService;
 import com.green.Spring_board.entity.Board;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +24,7 @@ public class BoardController {
 
     // * 전체 조회
     @GetMapping
-    public ResponseEntity<List<Board>> getBoards() {
+    public ResponseEntity<List<BoardResponse>> getBoards() {
         return ResponseEntity.ok(
             boardService.getAllBoards()
         );
@@ -31,7 +34,7 @@ public class BoardController {
     @GetMapping("/{id}")
     public ResponseEntity getBoardDetail(@PathVariable int id) {
         try {
-            Board board = boardService.getBoards(id);
+            BoardResponse board = boardService.getBoards(id);
             if (board == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -47,9 +50,19 @@ public class BoardController {
 
     // * 삽입 (생성)
     @PostMapping
-    public ResponseEntity<Void> createBoard(@RequestBody BoardCreateRequest boardCreateRequest) {
+    public ResponseEntity<Void> createBoard(
+            @RequestBody BoardCreateRequest boardCreateRequest,
+            HttpServletRequest httpServletRequest
+    ) {
         try {
-            int newBoardId = boardService.createBoard(boardCreateRequest);
+            HttpSession session = httpServletRequest.getSession(false);
+
+            if (session == null || session.getAttribute("userId") == null) {
+                return  ResponseEntity.status(401).build();
+            }
+
+            int userId = (int) session.getAttribute("userId");
+            int newBoardId = boardService.createBoard(boardCreateRequest, userId);
             URI location = URI.create("/api/board/" + newBoardId);
             return ResponseEntity.created(location).build();
         } catch (UserRequestException e) {
