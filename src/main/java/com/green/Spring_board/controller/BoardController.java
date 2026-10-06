@@ -1,6 +1,7 @@
 package com.green.Spring_board.controller;
 
 import com.green.Spring_board.dto.BoardResponse;
+import com.green.Spring_board.dto.BoardUpdateRequest;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UserRequestException;
 import com.green.Spring_board.dto.BoardCreateRequest;
@@ -8,6 +9,7 @@ import com.green.Spring_board.service.BoardService;
 import com.green.Spring_board.entity.Board;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,7 +53,7 @@ public class BoardController {
     // * 삽입 (생성)
     @PostMapping
     public ResponseEntity<Void> createBoard(
-            @RequestBody BoardCreateRequest boardCreateRequest,
+            @Valid @RequestBody BoardCreateRequest boardCreateRequest,
             HttpServletRequest httpServletRequest
     ) {
         try {
@@ -77,10 +79,10 @@ public class BoardController {
     @PatchMapping("/{id}")
     public ResponseEntity<Void> updateBoard(
             @PathVariable int id,
-            @RequestBody BoardCreateRequest boardCreateRequest
+            @Valid @RequestBody BoardUpdateRequest boardUpdateRequest
     ) {
         try {
-            boardService.updateBoard(id, boardCreateRequest);
+            boardService.updateBoard(id, boardUpdateRequest);
             return ResponseEntity.ok().build();
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

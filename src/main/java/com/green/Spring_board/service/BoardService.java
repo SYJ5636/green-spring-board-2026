@@ -1,6 +1,7 @@
 package com.green.Spring_board.service;
 
 import com.green.Spring_board.dto.BoardResponse;
+import com.green.Spring_board.dto.BoardUpdateRequest;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
@@ -105,7 +106,7 @@ public class BoardService {
     }
 
     // * 수정
-    public void updateBoard(int id, BoardCreateRequest boardCreateRequest) {
+    public void updateBoard(int id, BoardUpdateRequest boardUpdateRequest) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isEmpty()) {
            // 게시글을 못 찾은 경우
@@ -113,11 +114,11 @@ public class BoardService {
         }
         Board board = optionalBoard.get();
 
-        if (boardCreateRequest.getTitle() != null && !boardCreateRequest.getTitle().isBlank()) {
-            board.setTitle(boardCreateRequest.getTitle());
+        if (boardUpdateRequest.getTitle() != null && !boardUpdateRequest.getTitle().isBlank()) {
+            board.setTitle(boardUpdateRequest.getTitle());
         }
-        if (boardCreateRequest.getContent() != null && !boardCreateRequest.getContent().isBlank()) {
-            board.setContent(boardCreateRequest.getContent());
+        if (boardUpdateRequest.getContent() != null && !boardUpdateRequest.getContent().isBlank()) {
+            board.setContent(boardUpdateRequest.getContent());
         }
 
         boardRepository.save(board);

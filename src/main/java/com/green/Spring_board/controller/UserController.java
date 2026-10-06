@@ -3,7 +3,7 @@ package com.green.Spring_board.controller;
 import com.green.Spring_board.dto.LoginRequest;
 import com.green.Spring_board.dto.MyInfoResponse;
 import com.green.Spring_board.dto.SignupRequest;
-import com.green.Spring_board.entity.User;
+import com.green.Spring_board.dto.UserUpdateRequest;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
@@ -12,6 +12,7 @@ import com.green.Spring_board.repository.UserRepository;
 import com.green.Spring_board.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class UserController {
     private final UserRepository userRepository;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<Void> signup(@Valid @RequestBody SignupRequest signupRequest) {
         try {
             userService.signup(signupRequest);
             return ResponseEntity.ok().build();
@@ -41,8 +42,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest,
+    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest loginRequest,
                                       HttpServletRequest httpServletRequest) {
+        // DTO Valid
         try {
             int userId = userService.login(loginRequest);
             // 세션 작업 시작 (장부 관리 시작)
@@ -106,7 +108,7 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<Void> updateUserInfo(
             HttpServletRequest request,
-            @RequestBody MyInfoResponse myInfoResponse) {
+            @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
         // 이메일 닉네임 업데이트
         // 현재 유저를 가져와서, 해당 유저 정보를 사용자가 올린 요청으로 덮어 씌운다
         HttpSession session = request.getSession(false);
@@ -115,7 +117,7 @@ public class UserController {
         }
         try {
             int userId = (int) session.getAttribute("userId");
-            userService.updateUserInfo(userId, myInfoResponse);
+            userService.updateUserInfo(userId, userUpdateRequest);
 
             return ResponseEntity.ok().build();
         } catch (ResourceNotFoundException e) {

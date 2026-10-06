@@ -3,6 +3,7 @@ package com.green.Spring_board.service;
 import com.green.Spring_board.dto.LoginRequest;
 import com.green.Spring_board.dto.MyInfoResponse;
 import com.green.Spring_board.dto.SignupRequest;
+import com.green.Spring_board.dto.UserUpdateRequest;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
@@ -87,7 +88,7 @@ public class UserService {
 
 
     // 업데이트(수정)
-    public void updateUserInfo(int userId, MyInfoResponse request) {
+    public void updateUserInfo(int userId, UserUpdateRequest request) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             throw new ResourceNotFoundException("Not found User");
