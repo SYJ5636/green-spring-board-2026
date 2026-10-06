@@ -8,16 +8,11 @@ import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
-import com.green.Spring_board.exceptions.UserRequestException;
 import com.green.Spring_board.repository.UserRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 
@@ -28,11 +23,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public void signup(SignupRequest signupRequest) {
-        // 이메일과 비밀번호가 공백이 아닌지 확인
-        if (signupRequest.getEmail().isBlank() || signupRequest.getPassword().isBlank()) {
-            throw new UserRequestException("Email or password cannot be blank");
-        }
-
         // 이메일이 사용 중인지 확인
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             throw new ResourceConflictException("Email already exists");
@@ -97,12 +87,12 @@ public class UserService {
 
         // 닉네임만 들어온 경우에만 덮어 씌우기
         if (request.getNickname() != null && !request.getNickname().isBlank()) {
-            throw new UserRequestException("잘못된 입력");
-        } user.setNickname(request.getNickname());
+            user.setNickname(request.getNickname());
+        }
         // 이메일이 들어온 경우에만 덮어 씌우기
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            throw new UserRequestException("잘못된 입력");
-        } user.setEmail(request.getEmail());
+            user.setEmail(request.getEmail());
+        }
 
         userRepository.save(user);
     }
