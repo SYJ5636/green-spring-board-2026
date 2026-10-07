@@ -5,6 +5,7 @@ import com.green.Spring_board.dto.MyInfoResponse;
 import com.green.Spring_board.dto.SignupRequest;
 import com.green.Spring_board.dto.UserUpdateRequest;
 import com.green.Spring_board.entity.User;
+import com.green.Spring_board.exceptions.AuthorizationFailureException;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
@@ -81,9 +82,13 @@ public class UserService {
     public void updateUserInfo(int userId, UserUpdateRequest request) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new ResourceNotFoundException("Not found User");
+            throw new ResourceNotFoundException("유저를 찾을 수 없습니다.");
         }
         User user = optionalUser.get();
+
+        if (user.getId() != userId) {
+            throw new AuthorizationFailureException("사용자 정보 수정 권한이 없습니다.");
+        }
 
         // 닉네임만 들어온 경우에만 덮어 씌우기
         if (request.getNickname() != null && !request.getNickname().isBlank()) {
@@ -100,9 +105,13 @@ public class UserService {
     public void deleteUser(int userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("유저를 찾을 수 없습니다.");
         }
         User user = userOptional.get();
+
+        if (user.getId() != userId) {
+            throw new AuthorizationFailureException("사용자 정보 삭제 권한이 없습니다.");
+        }
         userRepository.delete(user);
     }
 }

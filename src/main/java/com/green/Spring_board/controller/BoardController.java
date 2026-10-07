@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,7 +71,8 @@ public class BoardController {
             if (session == null || session.getAttribute("userId") == null) {
                 throw new UnauthenticatedException("로그인이 필요합니다.");
             }
-            boardService.updateBoard(id, boardUpdateRequest);
+            int userId = (int) session.getAttribute("userId");
+            boardService.updateBoard(id, boardUpdateRequest, userId);
             return ResponseEntity.ok().body(ApiResponse.ok());
     }
 
@@ -94,7 +94,8 @@ public class BoardController {
 
             // 삭제 성공 시 응답 방법 2.
             // 204 + (No Content) + No Body
-            boardService.deleteBoard(id);
+            int userId = (int) session.getAttribute("userId");
+            boardService.deleteBoard(id, userId);
             return ResponseEntity.ok(ApiResponse.ok());
     }
 }
