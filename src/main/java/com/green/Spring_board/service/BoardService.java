@@ -75,6 +75,33 @@ public class BoardService {
         );
     }
 
+
+    // 내가 작성한 게시글 보기 (조회)
+    public List<BoardResponse> getMyBoards(int userId) {
+        List<Board> boards = boardRepository.findByUserId(userId);
+        // 작성한 게시글이 없는 경우
+        if (boards.isEmpty()) {
+            throw new ResourceNotFoundException("작성한 게시글이 없습니다.");
+        }
+        // 작성한 게시글이 있을 때
+        // 게시글을 하나씩 꺼내서 전체를 만들어줘야함
+        List<BoardResponse> responses = new ArrayList<>();
+
+        for (Board board : boards) {
+            responses.add(new BoardResponse(
+                    board.getId(),
+                    board.getTitle(),
+                    board.getContent(),
+                    board.getHits(),
+                    board.getUser().getId(),
+                    board.getUser().getNickname(),
+                    board.getCreatedDatetime(),
+                    board.getUpdatedDatetime()
+            ));
+        }
+        return responses;
+    }
+
     // * 삽입
     public int createBoard(BoardCreateRequest boardCreateRequest, Integer userId) {
         Optional<User> user = userRepository.findById(userId);
