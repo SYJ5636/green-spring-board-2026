@@ -2,6 +2,7 @@ package com.green.Spring_board.service;
 
 import com.green.Spring_board.dto.BoardResponse;
 import com.green.Spring_board.dto.BoardUpdateRequest;
+import com.green.Spring_board.entity.Like;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.AuthorizationFailureException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
@@ -9,6 +10,7 @@ import com.green.Spring_board.exceptions.UnauthenticatedException;
 import com.green.Spring_board.dto.BoardCreateRequest;
 import com.green.Spring_board.entity.Board;
 import com.green.Spring_board.repository.BoardRepository;
+import com.green.Spring_board.repository.LikeRepository;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class BoardService {
     private BoardRepository boardRepository;
     private UserRepository userRepository;
+    private LikeRepository likeRepository;
 
     // * 전체 조회
     public List<BoardResponse> getAllBoards() {
@@ -163,5 +166,37 @@ public class BoardService {
         }
 
         boardRepository.deleteById(id);
+    }
+
+    // 매개변수에 1.보드 아이디 / 2. 유저 아이디
+    public void pressLike(int id, int userId) {
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if (optionalBoard.isEmpty()) {
+            throw new ResourceNotFoundException("존재하지 않는 게시글입니다.");
+        }
+        Board board = optionalBoard.get();
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new ResourceNotFoundException("존재하지 않는 유저입니다.");
+        }
+        User user = optionalUser.get();
+
+        // 좋아요 취소 기능
+        // 1. 이 유저와 보드로 동일한 좋아요가 있는지 확인
+        Optional<Like> likeOptional = likeRepository.findByUserIdAndBoardId(userId, id);
+        if (likeOptional.isEmpty()) {
+            // 2. 없으면 추가
+            Like like = new Like();
+            like.setUser(user);
+            like.setBoard(board);
+            likeRepository.save(like);
+        } else {
+            // 3. 있으면 삭제
+            Like like = likeOptional.get();
+            likeRepository.deleteById(like.getId());
+        }
+
+
     }
 }

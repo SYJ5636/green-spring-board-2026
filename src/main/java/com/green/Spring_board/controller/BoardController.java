@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -112,4 +113,24 @@ public class BoardController {
             boardService.deleteBoard(id, userId);
             return ResponseEntity.ok(ApiResponse.ok());
     }
+
+    // 좋아요를 누른다는건 Post
+    @PostMapping("/like/{id}")
+    public ResponseEntity<ApiResponse<Void>> likeBoard(
+            @PathVariable int id,
+            HttpServletRequest httpServletRequest
+    ) {
+        HttpSession session = httpServletRequest.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new UnauthenticatedException("로그인이 필요합니다.");
+        }
+
+        int userId = (int) session.getAttribute("userId");
+        boardService.pressLike(id, userId);
+        return ResponseEntity.ok(ApiResponse.ok());
+    }
+
+    // 다시 눌렀을 때 취소
+    // 좋아요 수
+    //
 }
