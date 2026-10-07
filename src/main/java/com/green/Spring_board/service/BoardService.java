@@ -2,6 +2,7 @@ package com.green.Spring_board.service;
 
 import com.green.Spring_board.dto.BoardResponse;
 import com.green.Spring_board.dto.BoardUpdateRequest;
+import com.green.Spring_board.dto.LikeDetailResponse;
 import com.green.Spring_board.entity.Like;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.AuthorizationFailureException;
@@ -27,7 +28,7 @@ public class BoardService {
     private LikeRepository likeRepository;
 
     // * 전체 조회
-    public List<BoardResponse> getAllBoards() {
+    public List<BoardResponse> getAllBoards(int userId) {
 
         List<Board> boards = boardRepository.findAll();
         List<BoardResponse> boardResponses = new ArrayList<>();
@@ -42,6 +43,7 @@ public class BoardService {
                             board.getContent(),
                             board.getHits(),
                             board.getLikeCount(),
+                            likeRepository.existsByUserIdAndBoardId(userId, board.getId()),
                             board.getUser().getId(),
                             board.getUser().getNickname(),
                             board.getCreatedDatetime(),
@@ -56,13 +58,12 @@ public class BoardService {
     }
 
     // * 상세 조회
-    public BoardResponse getBoards(int id) {
+    public BoardResponse getBoards(int id, Integer userId) {
         Optional<Board> optionalBoard = boardRepository.findById(id);
         if (optionalBoard.isEmpty()) {
             // 요청한 게시글을 찾지 못한 경우
             throw new ResourceNotFoundException("요청한 게시글을 찾지 못했습니다.");
         }
-
         Board board = optionalBoard.get();
 
         board.setHits(board.getHits() + 1);
@@ -73,6 +74,7 @@ public class BoardService {
                 board.getContent(),
                 board.getHits(),
                 board.getLikeCount(),
+                likeRepository.existsByUserIdAndBoardId(userId, board.getId()),
                 board.getUser().getId(),
                 board.getUser().getNickname(),
                 board.getCreatedDatetime(),
@@ -93,12 +95,14 @@ public class BoardService {
         List<BoardResponse> responses = new ArrayList<>();
 
         for (Board board : boards) {
-            responses.add(new BoardResponse(
+            responses.add(
+                    new BoardResponse(
                     board.getId(),
                     board.getTitle(),
                     board.getContent(),
                     board.getHits(),
                     board.getLikeCount(),
+                    likeRepository.existsByUserIdAndBoardId(userId, board.getId()),
                     board.getUser().getId(),
                     board.getUser().getNickname(),
                     board.getCreatedDatetime(),
@@ -207,5 +211,19 @@ public class BoardService {
             board.setLikeCount(board.getLikeCount() - 1);
             boardRepository.save(board);
         }
+    }
+
+    public LikeDetailResponse getLikeDetail(int id) {
+        // 1. 이 게시글의 좋아요 누른 유저 정보들을 Like 테이블에서 싹 가져옴
+        List<Like> likes = likeRepository.findByBoardId(id);
+        // 2. 걔네 닉네임 하나하나 뽑아서, LikeDetailResponse 에 집어넣음
+        LikeDetailResponse likeDetailResponse = new LikeDetailResponse();
+        List<String> nicknames = new ArrayList<>();
+        for(Like like : likes) {
+            nicknames.add(like.getUser().getNickname());
+        }
+        likeDetailResponse.setLikedUserNames(nicknames);
+        // 3. 끝
+        return likeDetailResponse;
     }
 }

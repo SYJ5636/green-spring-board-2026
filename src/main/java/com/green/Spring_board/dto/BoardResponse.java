@@ -18,6 +18,7 @@ public class BoardResponse {
     String content; // 내용
     int hits; // 조회수
     int likeCount; // 좋아요 개수
+    boolean isLikedByMe; // 좋아요 눌렀는지
     Integer authorId; // 작성자 ID
     String authorNickname; // 작성자 닉네임
     LocalDateTime createdDatetime; // 생성일지

@@ -86,19 +86,18 @@ public class UserService {
         }
         User user = optionalUser.get();
 
-        if (user.getId() != userId) {
-            throw new AuthorizationFailureException("사용자 정보 수정 권한이 없습니다.");
-        }
-
-        // 닉네임만 들어온 경우에만 덮어 씌우기
-        if (request.getNickname() != null && !request.getNickname().isBlank()) {
-            user.setNickname(request.getNickname());
-        }
-        // 이메일이 들어온 경우에만 덮어 씌우기
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+        if(request.getEmail()!=null
+                && !request.getEmail().isBlank()
+                && !request.getEmail().equals(user.getEmail())
+        ){
             user.setEmail(request.getEmail());
         }
 
+        if(request.getNickname()!=null
+                && !request.getNickname().isBlank()
+        ) {
+            user.setNickname(request.getNickname());
+        }
         userRepository.save(user);
     }
 
@@ -109,9 +108,6 @@ public class UserService {
         }
         User user = userOptional.get();
 
-        if (user.getId() != userId) {
-            throw new AuthorizationFailureException("사용자 정보 삭제 권한이 없습니다.");
-        }
         userRepository.delete(user);
     }
 }
