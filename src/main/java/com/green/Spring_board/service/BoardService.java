@@ -41,6 +41,7 @@ public class BoardService {
                             board.getTitle(),
                             board.getContent(),
                             board.getHits(),
+                            board.getLikeCount(),
                             board.getUser().getId(),
                             board.getUser().getNickname(),
                             board.getCreatedDatetime(),
@@ -71,6 +72,7 @@ public class BoardService {
                 board.getTitle(),
                 board.getContent(),
                 board.getHits(),
+                board.getLikeCount(),
                 board.getUser().getId(),
                 board.getUser().getNickname(),
                 board.getCreatedDatetime(),
@@ -96,6 +98,7 @@ public class BoardService {
                     board.getTitle(),
                     board.getContent(),
                     board.getHits(),
+                    board.getLikeCount(),
                     board.getUser().getId(),
                     board.getUser().getNickname(),
                     board.getCreatedDatetime(),
@@ -191,12 +194,18 @@ public class BoardService {
             like.setUser(user);
             like.setBoard(board);
             likeRepository.save(like);
+
+            // 좋아요 카운터와 함께 보드 테이블의 카운터를 증가시킴
+            board.setLikeCount(board.getLikeCount() + 1);
+            boardRepository.save(board);
         } else {
             // 3. 있으면 삭제
             Like like = likeOptional.get();
             likeRepository.deleteById(like.getId());
+
+            // 좋아요 카운터와 함께 보드 테이블의 카운터를 감소시킴
+            board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
         }
-
-
     }
 }
