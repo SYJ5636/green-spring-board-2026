@@ -8,6 +8,7 @@ import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
+import com.green.Spring_board.global.UserState;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,6 +37,7 @@ public class UserService {
         user.setEmail(signupRequest.getEmail());
         user.setPassword(hashedPassword);
         user.setNickname(signupRequest.getNickname());
+        user.setState(UserState.ACTIVE);
         userRepository.save(user);
     }
 
@@ -43,14 +45,19 @@ public class UserService {
         // 1. 이메일 존재하는건지 확인
         Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
         if (userOptional.isEmpty()) {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("유저를 찾을 수 없습니다.");
         }
 
         User user = userOptional.get(); // 이 이메일의 사용자 정보
+
+        if (user.getState() == UserState.QUITTED){
+            throw new ResourceNotFoundException("탈퇴된 회원입니다.");
+        }
+
         // 2. 비밀번호가 올바른지 확인
         // matches 라는 함수가 맞는지 아닌지 검사를 해줌 개꿀
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new UnauthenticatedException("Wrong password");
+            throw new UnauthenticatedException("비밀번호가 틀립니다.");
         }
 
         // 3. 로그인 성공
@@ -60,9 +67,15 @@ public class UserService {
     public MyInfoResponse getUserInfo(int userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("유저를 찾을 수 없습니다.");
         }
         User user = userOptional.get();
+
+
+        if (user.getState() == UserState.QUITTED) {
+            throw new ResourceNotFoundException("탈퇴된 회원입니다.");
+        }
+
 
         // 4. DB에서 이 유저의 닉네임과 이메일을 받아옴
         String email = user.getEmail();
@@ -84,6 +97,10 @@ public class UserService {
             throw new ResourceNotFoundException("유저를 찾을 수 없습니다.");
         }
         User user = optionalUser.get();
+
+        if (user.getState() == UserState.QUITTED) {
+            throw new ResourceNotFoundException("탈퇴된 회원입니다.");
+        }
 
         if(request.getEmail()!=null
                 && !request.getEmail().isBlank()
@@ -107,7 +124,8 @@ public class UserService {
         }
         User user = userOptional.get();
 
-        userRepository.delete(user);
+        user.setState(UserState.QUITTED);
+        userRepository.save(user);
     }
 }
 

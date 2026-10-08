@@ -45,7 +45,7 @@ public class BoardService {
 
         // List<Board> -> List<BoardResponse> 형태로 변환
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Board> boards = boardRepository.findAll(pageable);
+        Page<Board> boards = boardRepository.findByIsDeletedFalse(pageable);
 
         // 1. List<BoardResponse> 형채의 빈 리스트 생성
         List<BoardResponse> boardResponses = new ArrayList<>();
@@ -81,6 +81,10 @@ public class BoardService {
         }
         Board board = optionalBoard.get();
 
+        if (board.isDeleted()){
+            throw new ResourceNotFoundException("삭제된 게시글입니다.");
+        }
+
         board.setHits(board.getHits() + 1);
         boardRepository.save(board);
         return new BoardResponse(
@@ -100,7 +104,7 @@ public class BoardService {
 
     // 내가 작성한 게시글 보기 (조회)
     public List<BoardResponse> getMyBoards(int userId) {
-        List<Board> boards = boardRepository.findByUserId(userId);
+        List<Board> boards = boardRepository.findByUserIdAndIsDeletedFalse(userId);
         // 작성한 게시글이 없는 경우
         if (boards.isEmpty()) {
             throw new ResourceNotFoundException("작성한 게시글이 없습니다.");
@@ -155,6 +159,9 @@ public class BoardService {
             throw new ResourceNotFoundException("게시글을 찾을 수 없습니다.");
         }
         Board board = optionalBoard.get();
+        if (board.isDeleted()){
+            throw new ResourceNotFoundException("삭제된 게시글입니다.");
+        }
 
         // 요청자의 user id
         // 작성자와 요청자 동일 여부 확인
@@ -187,7 +194,9 @@ public class BoardService {
             throw new AuthorizationFailureException("게시글 작업 권한이 없습니다.");
         }
 
-        boardRepository.deleteById(id);
+
+        board.setDeleted(true);
+        boardRepository.save(board);
     }
 
     // 매개변수에 1.보드 아이디 / 2. 유저 아이디

@@ -1,5 +1,6 @@
 package com.green.Spring_board.entity;
 
+import com.green.Spring_board.global.UserState;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,4 +34,8 @@ public class User {
 
     @Column(nullable = false, insertable = false, updatable = false)
     private LocalDateTime updatedDatetime;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING) // Enum값으로 값을 넘겨줌 이걸 쓰면
+    private UserState state;
 }

@@ -57,8 +57,7 @@ public class CommentService {
             throw new ResourceNotFoundException("Board Not Found");
         }
 
-
-        List<Comment> comments = commentRepository.findByBoardId(boardId);
+        List<Comment> comments = commentRepository.findByBoardUserIdAndIsDeletedFalse(boardId);
         // 댓글은 가져왔는데, 이걸 이제 CommentResponse 로 변환
 
         List<CommentResponse> commentResponses =new ArrayList<>();
@@ -91,6 +90,10 @@ public class CommentService {
 
         Comment comment = optionalComment.get();
 
+        if (comment.isDeleted()){
+            throw new ResourceNotFoundException("삭제된 댓글입니다.");
+        }
+
         // 요청자의 user id
         // 댓글 작성자와 요청자 동일 여부 확인
         if (comment.getUser().getId() != userId){
@@ -107,9 +110,7 @@ public class CommentService {
 
 
     // 삭제
-    public void deleteComment(
-            int commentId,
-            int userId
+    public void deleteComment(int commentId, int userId
     ) {
         // 1. 수정할 댓글 조회
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
@@ -123,8 +124,8 @@ public class CommentService {
             throw new AuthorizationFailureException("댓글 수정 권한이 없습니다.");
         }
 
-        commentRepository.delete(comment);
+
+        comment.setDeleted(true);
+        commentRepository.save(comment);
     }
-
-
 }
