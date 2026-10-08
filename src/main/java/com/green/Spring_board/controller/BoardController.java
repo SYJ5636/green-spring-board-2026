@@ -16,7 +16,6 @@ import java.util.List;
 
 // 전역 핸들러
 
-
 @RestController
 @RequestMapping("/api/board")
 @AllArgsConstructor
