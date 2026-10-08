@@ -5,7 +5,6 @@ import com.green.Spring_board.dto.MyInfoResponse;
 import com.green.Spring_board.dto.SignupRequest;
 import com.green.Spring_board.dto.UserUpdateRequest;
 import com.green.Spring_board.entity.User;
-import com.green.Spring_board.exceptions.AuthorizationFailureException;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
