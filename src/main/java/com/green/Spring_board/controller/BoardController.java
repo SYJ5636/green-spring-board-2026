@@ -29,7 +29,8 @@ public class BoardController {
     public ResponseEntity<ApiResponse<Page<BoardResponse>>> getBoards(
             HttpServletRequest httpServletRequest,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "latest") String order
     ) {
         // 기존 세션이 없으면 null 반환
         HttpSession session = httpServletRequest.getSession(false);
@@ -42,7 +43,7 @@ public class BoardController {
             userId = (int) session.getAttribute("userId");
         }
         return ResponseEntity.ok(
-                ApiResponse.ok(boardService.getAllBoards(userId, page, size))
+                ApiResponse.ok(boardService.getAllBoards(userId, page, size, order))
         );
     }
 

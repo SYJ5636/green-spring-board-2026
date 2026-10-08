@@ -6,6 +6,7 @@ import com.green.Spring_board.dto.LikeDetailResponse;
 import com.green.Spring_board.entity.Like;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.AuthorizationFailureException;
+import com.green.Spring_board.exceptions.InvalidStateException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
 import com.green.Spring_board.dto.BoardCreateRequest;
@@ -14,10 +15,7 @@ import com.green.Spring_board.repository.BoardRepository;
 import com.green.Spring_board.repository.LikeRepository;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,9 +30,21 @@ public class BoardService {
     private LikeRepository likeRepository;
 
     // * 전체 조회
-    public Page<BoardResponse> getAllBoards(int userId, int page, int size) {
+    public Page<BoardResponse> getAllBoards(int userId, int page, int size, String order) {
+        Sort sort;
+        if (order.equals("latest")) {
+            sort = Sort.by(Sort.Direction.DESC, "createdDatetime");
+        } else if (order.equals("likes")) {
+            sort = Sort.by(Sort.Direction.DESC, "likeCount");
+        } else if (order.equals("views")) {
+            sort = Sort.by(Sort.Direction.DESC, "hits");
+        } else {
+            // exception 던지기
+            throw new InvalidStateException("잘못된 정렬 옵션입니다.");
+        }
+
         // List<Board> -> List<BoardResponse> 형태로 변환
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, sort);
         Page<Board> boards = boardRepository.findAll(pageable);
 
         // 1. List<BoardResponse> 형채의 빈 리스트 생성
