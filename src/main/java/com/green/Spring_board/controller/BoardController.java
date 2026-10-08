@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +26,10 @@ public class BoardController {
 
     // * 전체 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BoardResponse>>> getBoards(
-            HttpServletRequest httpServletRequest
+    public ResponseEntity<ApiResponse<Page<BoardResponse>>> getBoards(
+            HttpServletRequest httpServletRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         // 기존 세션이 없으면 null 반환
         HttpSession session = httpServletRequest.getSession(false);
@@ -39,7 +42,7 @@ public class BoardController {
             userId = (int) session.getAttribute("userId");
         }
         return ResponseEntity.ok(
-                ApiResponse.ok(boardService.getAllBoards(userId))
+                ApiResponse.ok(boardService.getAllBoards(userId, page, size))
         );
     }
 

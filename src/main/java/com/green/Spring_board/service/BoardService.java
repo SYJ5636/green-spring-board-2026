@@ -14,6 +14,10 @@ import com.green.Spring_board.repository.BoardRepository;
 import com.green.Spring_board.repository.LikeRepository;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,13 +32,15 @@ public class BoardService {
     private LikeRepository likeRepository;
 
     // * 전체 조회
-    public List<BoardResponse> getAllBoards(int userId) {
-
-        List<Board> boards = boardRepository.findAll();
-        List<BoardResponse> boardResponses = new ArrayList<>();
+    public Page<BoardResponse> getAllBoards(int userId, int page, int size) {
         // List<Board> -> List<BoardResponse> 형태로 변환
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Board> boards = boardRepository.findAll(pageable);
 
+        // 1. List<BoardResponse> 형채의 빈 리스트 생성
+        List<BoardResponse> boardResponses = new ArrayList<>();
 
+        // 2. Board 개수만큼 반복하며 new BoardResponse 생성
         for (Board board : boards) {
             boardResponses.add(
                     new BoardResponse(
@@ -51,10 +57,9 @@ public class BoardService {
                     )
             );
         }
-        return boardResponses;
-        // 1. List<BoardResponse> 형채의 빈 리스트 생성
-        // 2. Board 개수만큼 반복하며 new BoardResponse 생성
-        // 3. 1번에서 만든 리스트에 추가
+
+        return new PageImpl<>(boardResponses, pageable, boards.getTotalElements());
+
     }
 
     // * 상세 조회
