@@ -12,8 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginRequest {
-    @NotBlank
-    private String email;
+    @NotBlank // null 또는 빈 문자열 방지
+    private String username;
     @NotBlank
     private String password;
 }

@@ -19,10 +19,10 @@ import java.io.IOException;
 @Component
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JWTTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
 
 
     @Override

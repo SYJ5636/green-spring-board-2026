@@ -30,18 +30,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(
-            @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletRequest httpServletRequest) {
-        int userId = userService.login(loginRequest);
-        // 세션 작업 시작 (장부 관리 시작)
-        // 이 요청이 세션 정보를 가지고 있어? 라고 하는 부분
-        HttpSession session = httpServletRequest.getSession();
-        // 잘못 된 키를 가지고 있을 수 있으니 자동으로 변경 해주는 부분
-        httpServletRequest.changeSessionId();
-        // 유저 아이디를 장부에 넣어야 함
-        session.setAttribute("userId", userId);
-        return ResponseEntity.ok(ApiResponse.ok());
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest loginRequest
+    ) {
+        LoginResponse result = userService.login(loginRequest);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     @GetMapping("/me")

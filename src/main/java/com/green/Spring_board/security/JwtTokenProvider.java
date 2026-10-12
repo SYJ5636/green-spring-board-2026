@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.UUID;
 
 @Component
-public class JWTTokenProvider {
+public class JwtTokenProvider {
     // 토큰 생성 및 검증, 정보 추출 및 만료 처리 기능들을 모아놓은 클래스
     // 토큰 관련된 모든 기능들은 여기에!
 
@@ -25,7 +25,7 @@ public class JWTTokenProvider {
     // 리프레시 토큰의 유효 기간
     private static final long REFRESH_TOKEN_VALIDITY = 1000 * 60 * 60 *24 * 7;
 
-    public JWTTokenProvider(
+    public JwtTokenProvider(
             @Value("${spring.jwt.secret}") String secretKey
     ){
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
@@ -67,7 +67,7 @@ public class JWTTokenProvider {
             String tokenType = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJwt(token)
+                    .parseClaimsJws(token)
                     .getBody()
                     .get("tokenType", String.class);
 
@@ -83,7 +83,7 @@ public class JWTTokenProvider {
             String tokenType = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
-                    .parseClaimsJwt(token)
+                    .parseClaimsJws(token)
                     .getBody()
                     .get("tokenType", String.class);
 
@@ -98,7 +98,7 @@ public class JWTTokenProvider {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
@@ -108,7 +108,7 @@ public class JWTTokenProvider {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
     }
