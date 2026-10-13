@@ -76,6 +76,16 @@ public class UserController {
         // 사용자의 로그인 세션은 만료 함
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<RefreshResponse>> refresh(
+            @Valid @RequestBody RefreshRequest refreshRequest
+    ){
+        // 리프레시 토큰을 이용해 새로운 액세스 토큰을 재발급 받는 API
+        RefreshResponse response = userService.refresh(refreshRequest);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+
     @PatchMapping("/update")
     public ResponseEntity<ApiResponse<Void>> updateUserInfo(
             HttpServletRequest request,
