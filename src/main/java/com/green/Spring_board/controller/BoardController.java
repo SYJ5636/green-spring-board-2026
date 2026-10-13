@@ -110,5 +110,11 @@ public class BoardController {
     // 좋아요를 누른적 있으면 true 없으면 false로 내려주면 됨
 
 
-
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<BoardResponse>>> searchPosts(
+            @RequestParam String keyword
+    ){
+      List<BoardResponse> responses = boardService.search(keyword);
+      return ResponseEntity.ok(ApiResponse.ok(responses));
+    }
 }

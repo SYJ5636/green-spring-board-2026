@@ -13,6 +13,7 @@ import com.green.Spring_board.repository.CommentRepository;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class CommentService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void createComment(
             CommentCreateRequest commentCreateRequest,
             int userId,
@@ -51,6 +53,7 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
+    @Transactional(readOnly = true)
     public List<CommentResponse> readComments(int boardId) {
         boolean isBoardExists = boardRepository.existsById(boardId);
         if (!isBoardExists) {
@@ -76,6 +79,7 @@ public class CommentService {
 
 
     // 수정
+    @Transactional
     public void updateComment(
             int commentId,
             CommentUpdateRequest commentUpdateRequest,
@@ -110,6 +114,7 @@ public class CommentService {
 
 
     // 삭제
+    @Transactional
     public void deleteComment(int commentId, int userId
     ) {
         // 1. 수정할 댓글 조회

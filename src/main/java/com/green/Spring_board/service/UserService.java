@@ -38,6 +38,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AccessTokenBlacklistRepository accessTokenBlacklistRepository;
 
+    @Transactional
     public void signup(SignupRequest signupRequest) {
         // 아이디가 사용 중인지 확인
         if (userRepository.existsByUsername(signupRequest.getUsername())) {
@@ -125,6 +126,7 @@ public class UserService {
         accessTokenBlacklistRepository.save(accessTokenBlacklist);
     }
 
+    @Transactional
     public RefreshResponse refresh(@Valid RefreshRequest refreshRequest) {
         String userRefreshToken = refreshRequest.getRefreshToken();
         // 1. 리프레시 토큰 위/변조 여부 검증
@@ -161,7 +163,7 @@ public class UserService {
         return new RefreshResponse(accessToken);
     }
 
-
+    @Transactional
     public MyInfoResponse getUserInfo(int userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -189,6 +191,7 @@ public class UserService {
 
 
     // 업데이트(수정)
+    @Transactional
     public void updateUserInfo(int userId, UserUpdateRequest request) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
@@ -215,6 +218,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(int userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
