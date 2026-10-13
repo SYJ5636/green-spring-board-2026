@@ -104,7 +104,7 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰에서 만료일자 추출
-    public Date getExpirationFromToken(String token){
+    public Date getExpiration(String token){
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

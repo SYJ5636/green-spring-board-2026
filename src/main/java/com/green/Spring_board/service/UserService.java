@@ -1,13 +1,16 @@
 package com.green.Spring_board.service;
 
 import com.green.Spring_board.dto.*;
+import com.green.Spring_board.entity.RefreshToken;
 import com.green.Spring_board.entity.User;
 import com.green.Spring_board.exceptions.ResourceConflictException;
 import com.green.Spring_board.exceptions.ResourceNotFoundException;
 import com.green.Spring_board.exceptions.UnauthenticatedException;
 import com.green.Spring_board.global.UserState;
+import com.green.Spring_board.repository.RefreshTokenRepository;
 import com.green.Spring_board.repository.UserRepository;
 import com.green.Spring_board.security.JwtTokenProvider;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +19,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -25,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public void signup(SignupRequest signupRequest) {
         // 아이디가 사용 중인지 확인
@@ -50,6 +57,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -71,8 +79,25 @@ public class UserService {
 
         // 액세스 토큰 발급
         String accessToken = tokenProvider.generateAccessToken(user.getUsername());
+        // 리프레시 토큰 발급
+        String refreshToken = tokenProvider.generateRefreshToken(user.getUsername());
+
+        // 1. 해당 유저의 기존 리프레시 토큰(들) 삭제
+        refreshTokenRepository.deleteByUserId(user.getId());
+
+        // 2. 해당 유저의 신규 리프레시 토큰 저장
+        Date expiration = tokenProvider.getExpiration(refreshToken);
+        LocalDateTime expirationDateTime = expiration.toInstant().atZone(
+                ZoneId.systemDefault()
+        ).toLocalDateTime();
+
+        RefreshToken refresh = new RefreshToken();
+        refresh.setUser(user);
+        refresh.setToken(refreshToken);
+        refresh.setExpirationDateTime(expirationDateTime);
+        refreshTokenRepository.save(refresh);
         // 3. 로그인 성공
-        return new LoginResponse(accessToken);
+        return new LoginResponse(accessToken, refreshToken);
     }
 
     public MyInfoResponse getUserInfo(int userId) {
