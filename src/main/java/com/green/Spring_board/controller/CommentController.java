@@ -23,17 +23,9 @@ public class CommentController {
     @PostMapping("/board/{id}/comment")
     public ResponseEntity<ApiResponse<Void>> createComment(
             @PathVariable int id,
-            @RequestBody CommentCreateRequest commentCreateRequest,
-            HttpServletRequest httpServletRequest
+            @RequestBody CommentCreateRequest commentCreateRequest
     ){
-        HttpSession session = httpServletRequest.getSession(false);
-
-        if(session == null || session.getAttribute("userId") == null) {
-            throw new UnauthenticatedException("로그인이 필요합니다.");
-        }
-        int userId = (int) session.getAttribute("userId");
-
-        commentService.createComment(commentCreateRequest, userId, id);
+        commentService.createComment(commentCreateRequest, id);
 
         return ResponseEntity.ok(ApiResponse.ok());
     }

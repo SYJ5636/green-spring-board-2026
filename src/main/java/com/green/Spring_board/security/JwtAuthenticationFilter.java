@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             // 토큰 위/변조 여부 검사
-            if (tokenProvider.validateRefreshToken(token)){
+            if (tokenProvider.validateAccessToken(token)){
                 Optional<AccessTokenBlacklist> optionalAccessTokenBlacklist = accessTokenBlacklistRepository.findByToken(token);
                 if (optionalAccessTokenBlacklist.isPresent()){
                     authenticationEntryPoint.commence(
@@ -53,10 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     return;
                 }
-            }
 
-
-            if (tokenProvider.validateAccessToken(token)){
                 String username = tokenProvider.getUsernameFromToken(token);
                 UserDetails userDetails;
                 try {

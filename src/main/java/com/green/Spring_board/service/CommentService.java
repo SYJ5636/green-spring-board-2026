@@ -12,6 +12,7 @@ import com.green.Spring_board.repository.BoardRepository;
 import com.green.Spring_board.repository.CommentRepository;
 import com.green.Spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +30,10 @@ public class CommentService {
     @Transactional
     public void createComment(
             CommentCreateRequest commentCreateRequest,
-            int userId,
             int boardId
     ) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        int userId = userRepository.findByUsername(username).getId();
         Optional<User> userOptional = userRepository.findById(userId);
         Optional<Board> boardOptional = boardRepository.findById(boardId);
 
@@ -60,7 +62,7 @@ public class CommentService {
             throw new ResourceNotFoundException("Board Not Found");
         }
 
-        List<Comment> comments = commentRepository.findByBoardUserIdAndIsDeletedFalse(boardId);
+        List<Comment> comments = commentRepository.findByBoardIdAndIsDeletedFalse(boardId);
         // 댓글은 가져왔는데, 이걸 이제 CommentResponse 로 변환
 
         List<CommentResponse> commentResponses =new ArrayList<>();
